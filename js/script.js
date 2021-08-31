@@ -1,4 +1,5 @@
 var paramModule = {
+    "docName": "Signature du document : docTest.pdf",
     "fname": "Julien",
     "lname": "Troussier"
 };
@@ -16,7 +17,9 @@ let pSigText = new Promise(function(resolve, reject){
 });*/
 
 function ReturnValue() {
-    console.log({"base64": base64Sig, "sigText": sigText});
+    let jsonResult = {"base64": base64Sig, "sigText": sigText};
+    console.log(jsonResult);
+
 }
 
 /*  This is the main function for capturing the signature from the pad */
@@ -55,8 +58,9 @@ function capture()
         var firstName = paramModule.fname;
         var lastName = paramModule.lname;
         var fullName = firstName + " " + lastName;
+        var title = paramModule.docName;
 
-        dynCapt.Capture(sigCtl, fullName, "Document Approval", hash, null, onDynCaptCapture);
+        dynCapt.Capture(sigCtl, fullName, title, hash, null, onDynCaptCapture);
     }
 
     function onDynCaptCapture(dynCaptV, SigObjV, status)
