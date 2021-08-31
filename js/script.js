@@ -19,7 +19,6 @@ let pSigText = new Promise(function(resolve, reject){
 function ReturnValue() {
     let jsonResult = {"base64": base64Sig, "sigText": sigText};
     console.log(jsonResult);
-
 }
 
 /*  This is the main function for capturing the signature from the pad */
