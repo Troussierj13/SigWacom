@@ -17,7 +17,7 @@ var wizardEventController =
   body_onload : function()
   {
     //clearTextBox();
-    actionWhenRestarted(capture);
+    actionWhenRestarted();
   },
   
   start_stop : function(numScreens)

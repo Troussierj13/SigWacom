@@ -1,29 +1,102 @@
 var paramModule = {
-    "docName": "Signature du document : docTest.pdf",
+    "docName": "Signature du document : VisiteMedicaleAptitude.pdf",
     "fname": "Julien",
     "lname": "Troussier"
 };
 
 var sigText = null;
 var base64Sig = null;
+var bytePdfBase = null;
 
-/*var deferreds = [];
+function _base64ToArrayBuffer(base64) {
+    var binary_string = window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
 
-let pSigText = new Promise(function(resolve, reject){
-    deferreds.push({resolve: resolve, reject: reject});
-    let pBase64Sig = new Promise(function(resolve, reject){
-        deferreds.push({resolve: resolve, reject: reject});
-    });
-});*/
+async function DownloadModifiedPDF(jsonResult) {
+
+    const pdfDocBase = await PDFLib.PDFDocument.load(jsonResult.pdfBaseByte)
+
+    const pages = pdfDocBase.getPages()
+    const firstPage = pages[0]
+    /*const form = pdfDocBase.getForm();
+    const fields = form.getFields()
+    fields.forEach(field => {
+        const name = field.getName()
+        console.log('Field name:', name)
+    })*/
+
+    //const field = form.getField('Signature 1');
+    //console.log(field);
+
+    const pngImage = await pdfDocBase.embedPng(jsonResult.base64Sig);
+    const pngDims = pngImage.scale(0.35)
+    firstPage.drawImage(pngImage, {
+        x: 380,
+        y: 95,
+        width: pngDims.width,
+        height: pngDims.height,
+    })
+
+    //field.setImage(pngImage);
+    //const jpgDims = jpgImage.scale(1);
+
+    /*firstPage.drawImage(jpgImage, {
+        x: 25,
+        y: 25,
+        width: jpgDims.width,
+        height: jpgDims.height
+    })*/
+
+    // Serialize the PDFDocument to bytes (a Uint8Array)
+    const pdfBytes = await pdfDocBase.save()
+
+    var filename = jsonResult.filename;
+    var blob = new Blob([pdfBytes], {type: 'application/pdf'});
+    var link = document.createElement("a");
+    link.download = filename;
+    link.innerHTML = "Download File";
+    link.href = window.URL.createObjectURL(blob);
+    link.click();
+    link.remove();
+}
+
+function OnChangeFile(event) {
+    var file = event.target.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        bytePdfBase = e.target.result;
+        //console.log(bytePdfBase);
+        capture();
+    };
+
+    reader.readAsArrayBuffer(file);
+}
 
 function ReturnValue() {
-    let jsonResult = {"base64": base64Sig, "sigText": sigText};
-    console.log(jsonResult);
+    let jsonResult = {"base64Sig": base64Sig, "sigText": sigText, "pdfBaseByte":bytePdfBase, "filename": "VisiteMedicaleAptitude.pdf"};
+    console.log(base64Sig);
+
+    DownloadModifiedPDF(jsonResult);
 }
 
 /*  This is the main function for capturing the signature from the pad */
 function capture()
 {
+    var files = document.getElementById('files').files;
+    if (!files.length) {
+        alert('Please select a file!');
+        return;
+    }
+    var file = files[0];
+
+    //console.log(file);
+
     if(!wgssSignatureSDK.running || null == dynCapt)
     {
         //print("Session error. Restarting the session.");
@@ -80,7 +153,7 @@ function capture()
 
                     /* Set the RenderBitmap flags as appropriate depending on whether the user wants to use a picture image or B64 text value */
                     var outputFlags = wgssSignatureSDK.RBFlags.RenderOutputBase64 | wgssSignatureSDK.RBFlags.RenderColor32BPP;
-                    sigObj.RenderBitmap(BITMAP_IMAGEFORMAT, imageBox.clientWidth, imageBox.clientHeight, BITMAP_INKWIDTH, BITMAP_INKCOLOR, BITMAP_BACKGROUNDCOLOR, outputFlags, BITMAP_PADDING_X, BITMAP_PADDING_Y, onRenderBitmap);
+                    sigObj.RenderBitmap('png', imageBox.clientWidth, imageBox.clientHeight, BITMAP_INKWIDTH, BITMAP_INKCOLOR, BITMAP_BACKGROUNDCOLOR, outputFlags, BITMAP_PADDING_X, BITMAP_PADDING_Y, onRenderBitmap);
                     break;
 
                 case wgssSignatureSDK.DynamicCaptureResult.DynCaptCancel:
@@ -126,6 +199,8 @@ function capture()
             }
 
             base64Sig = bmpObj;
+            console.log("png ? : " + bmpObj);
+            console.log(sigObjV);
             sigObjV.GetSigText(onGetSigText);
         }
         else

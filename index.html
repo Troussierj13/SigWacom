@@ -9,12 +9,17 @@
     <script src="js/SigCaptX/SigCaptX-Utils.js"></script>
     <script src="js/SigCaptX/SigCaptX-SessionControl.js"></script>
     <script src="js/SigCaptX/SigCaptX-Globals.js"></script>
+    <script src="js/lib/PDFlib.js"></script>
+
 
     <body onload="wizardEventController.body_onload()">
-    <div style="width:100%">
-        <div id="imageBox" class="boxed" style="height:35mm;width:60mm; border:1px solid #d3d3d3;">
+
+        <input type="file" id="files" name="file" accept="application/pdf" onchange="OnChangeFile(event)" />
+
+        <div style="width:100%">
+            <div id="imageBox" class="boxed" style="height:35mm; width:60mm; border:1px solid #d3d3d3;">
+            </div>
         </div>
-    </div>
     </body>
 
     <script src="js/script.js"></script>
